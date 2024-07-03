@@ -5,6 +5,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -16,26 +18,23 @@ import org.thymeleaf.spring5.view.ThymeleafViewResolver;
 
 import javax.sql.DataSource;
 
+import java.util.Objects;
+
 import static ru.skulkina.dao.PersonDao.*;
 
 @Configuration
 @ComponentScan("ru.skulkina")
 @EnableWebMvc
+@PropertySource("classpath:database.properties")
 public class SpringConfig implements WebMvcConfigurer {
     private final ApplicationContext applicationContext;
+    public final Environment env;
 
-    @Value("${jdbc.driverClassName}")
-    private static String driverClass;
-    @Value("${jdbc.url}")
-    private static String URL;
-    @Value("${jdbc.username}")
-    private static String USERNAME;
-    @Value("${jdbc.password}")
-    private static String PASSWORD;
 
     @Autowired
-    public SpringConfig(ApplicationContext applicationContext) {
+    public SpringConfig(ApplicationContext applicationContext, Environment env) {
         this.applicationContext = applicationContext;
+        this.env = env;
     }
 
     @Bean
@@ -67,10 +66,10 @@ public class SpringConfig implements WebMvcConfigurer {
     @Bean
     public DataSource dataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName("org.postgresql.Driver");
-        dataSource.setUrl("jdbc:postgresql://localhost:5432/firstDB");
-        dataSource.setUsername("postgres");
-        dataSource.setPassword("1234");
+        dataSource.setDriverClassName(Objects.requireNonNull(env.getProperty("jdbc.driverClassName")));
+        dataSource.setUrl(env.getProperty("jdbc.url"));
+        dataSource.setUsername(env.getProperty("jdbc.username"));
+        dataSource.setPassword(env.getProperty("jdbc.password"));
         return dataSource;
     }
     @Bean
