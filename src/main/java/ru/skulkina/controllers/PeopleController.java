@@ -6,8 +6,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import ru.skulkina.dao.BookDao;
 import ru.skulkina.dao.PersonDao;
 import ru.skulkina.models.Person;
+import ru.skulkina.util.PersonValidator;
 
 import javax.validation.Valid;
 
@@ -16,12 +18,15 @@ import javax.validation.Valid;
 public class PeopleController {
 
     private final PersonDao personDao;
+    private final BookDao bookDao;
+    private final PersonValidator personValidator;
 
 
     @Autowired
-    public PeopleController(PersonDao personDao) {
+    public PeopleController(PersonDao personDao, BookDao bookDao, PersonValidator personValidator) {
         this.personDao = personDao;
-
+        this.bookDao = bookDao;
+        this.personValidator = personValidator;
     }
 
     @GetMapping()
@@ -35,6 +40,7 @@ public class PeopleController {
     public String showPerson(@PathVariable("id") int id, Model model) {
         //Получим 1 человека по ИД из Дао и передадим на отобржение в представление
         model.addAttribute("person",personDao.show(id));
+        model.addAttribute("books",personDao.getBooksByPersonId(id));
         return "people/show";
     }
     @GetMapping("/new")
@@ -45,7 +51,7 @@ public class PeopleController {
     @PostMapping
     public String createPerson(@ModelAttribute("person") @Valid Person person,
                                BindingResult bindingResult ) {
-
+        personValidator.validate(person,bindingResult);
         if (bindingResult.hasErrors()) {return "people/new";}
         personDao.save(person);
         return "redirect:/people";
@@ -59,7 +65,7 @@ public class PeopleController {
     public String updatePerson(@ModelAttribute("person") @Valid Person person,
                                BindingResult bindingResult,
                                @PathVariable("id") int id) {
-
+        personValidator.validate(person,bindingResult);
         if (bindingResult.hasErrors()) {return "people/edit";}
         personDao.update(id, person);
         return "redirect:/people";

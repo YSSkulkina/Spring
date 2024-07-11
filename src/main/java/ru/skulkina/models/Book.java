@@ -16,13 +16,16 @@ public class Book {
     @Min(value=1800,message = "Year of production should be greater than 1900")
     private int year;
 
+
+
     public Book() {}
 
-    public Book(int id, String title, String author, int year) {
-        this.id = id;
+    public Book(String title, String author, int year) {
+
         this.title = title;
         this.author = author;
         this.year = year;
+
     }
 
     public int getId() {
@@ -57,4 +60,6 @@ public class Book {
     public void setYear(@Min(value = 1800, message = "Year of production should be greater than 1900") int year) {
         this.year = year;
     }
+
+
 }

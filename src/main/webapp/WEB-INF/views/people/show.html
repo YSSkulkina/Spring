@@ -5,12 +5,24 @@
     <title>Person</title>
 </head>
 <body>
-<p th:text="${person.getId()}">VALUE</p>
-<p th:text="${person.getName()}">VALUE</p>
-<p th:text="${person.getYearOfBirth()}">VALUE</p>
 
+<p th:text="${person.getName()+', '+ person.getYearOfBirth()}">VALUE</p>
+<br/>
+<div th:if="${books.isEmpty()}">
+    <p>Человек пока не взял ни одной книги</p>
+</div>
+<br/>
+<div th:if="${!books.isEmpty()}">
+    <b>Книги:</b>
+    <br/>
+    <table th:each="book: ${books}">
+        <tr th:text="${book.getTitle()+', '+book.getAuthor()+', '+book.getYear()}">VALUE</tr>
+    </table>
+</div>
+<br/>
 
-<a th:href="@{/people/{id}/edit(id=${person.getId()})}">Edit</a>
+<a th:href="@{/people/{id}/edit(id=${person.getId()})}">
+    <input type="submit" value="Редактировать"/></a>
 
 <form th:method="DELETE" th:action="@{/people/{id}(id=${person.getId()})}">
     <input type="submit" value="Удалить"/>

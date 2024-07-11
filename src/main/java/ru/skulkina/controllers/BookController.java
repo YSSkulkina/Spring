@@ -5,23 +5,26 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ru.skulkina.dao.BookDao;
+import ru.skulkina.dao.PersonDao;
 import ru.skulkina.models.Book;
+import ru.skulkina.models.Person;
 
 
 import javax.validation.Valid;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/book")
 public class BookController {
 
     private final BookDao bookDao;
+    private final PersonDao personDao;
 
 
     @Autowired
-    public BookController( BookDao bookDao) {
+    public BookController(BookDao bookDao, PersonDao personDao) {
         this.bookDao = bookDao;
-
-
+        this.personDao = personDao;
     }
 
     @GetMapping()
@@ -32,9 +35,16 @@ public class BookController {
     }
 
     @GetMapping("/{id}")
-    public String showBook(@PathVariable("id") int id, Model model) {
+    public String showBook(@PathVariable("id") int id, Model model,@ModelAttribute("person") Person person) {
         //Получим 1 человека по ИД из Дао и передадим на отобржение в представление
         model.addAttribute("book",bookDao.show(id));
+
+        Optional<Person> bookOwner = bookDao.getBookOwner(id);
+
+        if (bookOwner.isPresent()) {
+            model.addAttribute("owner",bookOwner.get());}
+        else model.addAttribute("people",personDao.index());
+
         return "book/show";
     }
     @GetMapping("/new")
@@ -69,4 +79,16 @@ public class BookController {
         bookDao.delete(id);
         return "redirect:/book";
     }
+    @PatchMapping("/{id}/pass")
+    public String passBook(@PathVariable("id") int id){
+    bookDao.passBook(id);
+        return "redirect:/book/"+id;
+    }
+    @PatchMapping("/{id}/get")
+    public String getBook(@PathVariable("id") int id, @ModelAttribute("person") Person selectedPerson){
+    bookDao.getBook(id,selectedPerson);
+        return "redirect:/book/"+id;
+    }
+
+
 }

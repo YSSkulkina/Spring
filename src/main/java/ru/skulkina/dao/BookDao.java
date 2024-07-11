@@ -5,9 +5,12 @@ import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import ru.skulkina.models.Book;
+import ru.skulkina.models.Person;
 
 
 import java.util.List;
+import java.util.Optional;
+
 @Component
 public class BookDao {
     private final JdbcTemplate jdbcTemplate;
@@ -33,13 +36,25 @@ public class BookDao {
     }
 
     public void update(int id, Book updateBook){
-        jdbcTemplate.update("UPDATE book SET title=?, author=?,year=? WHERE id=?",updateBook.getTitle(),updateBook.getAuthor(),updateBook.getYear());
+        jdbcTemplate.update("UPDATE book SET title=?, author=?,year=? WHERE id=?",updateBook.getTitle(),updateBook.getAuthor(),updateBook.getYear(),id);
 
     }
     public void delete(int id){
         jdbcTemplate.update("DELETE FROM book WHERE id=?",id);
     }
 
-
+    public Optional <Person> getBookOwner(int id){
+        return jdbcTemplate.query("SELECT person.* FROM book JOIN person ON book.person_id=person.id "
+                        +" WHERE book.id=? ", new Object[]{id}, new BeanPropertyRowMapper<>(Person.class))
+                .stream().findAny();
+    }
+    //Освобождает книгу
+    public void passBook(int id){
+        jdbcTemplate.update("UPDATE book SET person_id=NULL WHERE id=?",id);
+    }
+    //Назначает книгу
+    public void getBook(int id,Person selectedPerson){
+        jdbcTemplate.update("UPDATE book SET person_id=? WHERE id=?",selectedPerson.getId(),id);
+    }
 
 }
